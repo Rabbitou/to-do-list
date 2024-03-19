@@ -1,86 +1,83 @@
-import ListItem from "./ListItem";
+import React, { useRef, useState } from "react";
 import { ItemData } from "../../types/ListItem";
-import { useRef, useState } from "react";
+import ListItem from "./ListItem";
+import { useInterSectionObserver } from "../../hehe";
 
 export default function Todolist() {
-  const addBtn = useRef<HTMLButtonElement>(null);
   const inputTask = useRef<HTMLInputElement>(null);
   const [task, setTask] = useState<ItemData[]>([]);
-  const [idCount, setIdCount] = useState(0);
-  console.log(task);
+  const refLast = useRef<HTMLSpanElement | null>(null);
+
+  useInterSectionObserver({
+    target: refLast,
+    onIntersect: () => console.log("nextPage"),
+    threshold: 1,
+    enabled: true,
+  });
 
   const addNewTask = () => {
     if (inputTask.current && inputTask.current.value) {
       const newTask: ItemData = {
-        id: idCount,
+        id: crypto.randomUUID(),
         task: inputTask.current ? inputTask.current.value : "",
         completed: false,
       };
       setTask([...task, newTask]);
-      setIdCount(idCount + 1);
       if (inputTask.current) inputTask.current.value = "";
     }
   };
 
-  const editTask = (id: number, newTask: string) => {
-    setTask(
-      task.map((item) => {
-        if (item.id === id) item.task = newTask;
-        return item;
-      })
+  const editTask = (id: string, newTask: string) => {
+    setTask((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, task: newTask } : item))
     );
   };
 
-  const completeTask = (id: number) => {
-    setTask(
-      task.map((item) => {
-        if (item.id === id) item.completed = !item.completed;
-        return item;
-      })
+  const completeTask = (id: string) => {
+    setTask((prev) =>
+      prev.map((item) =>
+        item.id === id ? { ...item, completed: !item.completed } : item
+      )
     );
   };
 
-  const deleteTask = (id: number) => {
-    setTask(
-      task.filter((item) => {
-        return item.id !== id;
-      })
-    );
+  const deleteTask = (id: string) => {
+    setTask((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleEnterKey = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      addNewTask();
-    }
+  const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    addNewTask();
   };
 
   return (
     <div className="flex flex-col gap-4 bg-white/5 rounded-md p-5 mt-5">
-      <div className="flex">
+      <form onSubmit={handleOnSubmit} className="flex">
         <input
           ref={inputTask}
           placeholder="Enter your task..."
           type="text"
           className="outline-none rounded-tl-md rounded-bl-md p-1 pl-2"
-          onKeyDown={(e) => handleEnterKey(e)}
         />
         <button
-          ref={addBtn}
-          className="rounded-tl-none rounded-bl-none"
-          onClick={addNewTask}
+          className="rounded-tl-none rounded-bl-none bg-gray-800"
+          type="submit"
         >
           Add Task
         </button>
+      </form>
+      <div className="flex flex-col gap-2 max-h-[300px] overflow-auto">
+        {task.map((data) => (
+          <ListItem
+            data={data}
+            editTask={editTask}
+            deleteTask={deleteTask}
+            completeTask={completeTask}
+            key={data.id}
+          />
+        ))}
+        <span ref={refLast} className={``}></span>
       </div>
-      {task.map((data) => (
-        <ListItem
-          data={data}
-          editTask={editTask}
-          deleteTask={deleteTask}
-          completeTask={completeTask}
-          key={data.id}
-        />
-      ))}
     </div>
   );
 }

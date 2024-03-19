@@ -1,19 +1,20 @@
-import { useRef, useState } from "react";
+import { useRef, useState, memo } from "react";
 import { ItemData } from "../../types/ListItem";
 
-export default function ListItem({
+export default memo(function ListItem({
   data,
   editTask,
   deleteTask,
   completeTask,
 }: {
   data: ItemData;
-  editTask: (id: number, newTask: string) => void;
-  deleteTask: (id: number) => void;
-  completeTask: (id: number) => void;
+  editTask: (id: string, newTask: string) => void;
+  deleteTask: (id: string) => void;
+  completeTask: (id: string) => void;
 }) {
   const [count, setCount] = useState(0);
   const inputTask = useRef<HTMLInputElement>(null);
+  console.log(data.id);
 
   const changeFocus = () => {
     if (inputTask.current) {
@@ -54,7 +55,7 @@ export default function ListItem({
         onClick={() => {
           setCount(count + 1);
         }}
-        onBlur={leaveFocus}
+        // onBlur={leaveFocus}
         onKeyDown={(e) => handleKeyDown(e)}
         readOnly
       />
@@ -73,4 +74,4 @@ export default function ListItem({
       </div>
     </div>
   );
-}
+});
