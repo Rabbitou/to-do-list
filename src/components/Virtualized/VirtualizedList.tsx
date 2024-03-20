@@ -1,35 +1,6 @@
 import React, { useState } from "react";
 import { ItemData } from "../../../types/ListItem";
 
-const renderItems = () => {
-  const visibleItems = task.slice(startIndex, endIndex).map((item, index) => {
-    const itemIndex = startIndex + index;
-    const translateY = itemIndex * itemHeight;
-
-    return (
-      <div
-        key={itemIndex}
-        style={{
-          position: "absolute",
-          height: itemHeight,
-          width: "100%",
-          transform: `translateY(${translateY}px)`,
-        }}
-      >
-        <ListItem
-          data={item}
-          editTask={editTask}
-          deleteTask={deleteTask}
-          completeTask={completeTask}
-          key={item.id}
-        />
-      </div>
-    );
-  });
-
-  return visibleItems;
-};
-
 interface VirtualizedListInterface {
   numVisibleItems: number;
   itemHeight: number;

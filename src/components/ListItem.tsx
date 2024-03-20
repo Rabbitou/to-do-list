@@ -1,19 +1,36 @@
-import { useRef, useState, memo } from "react";
+import React, { memo, useRef } from "react";
 import { ItemData } from "../../types/ListItem";
 
 export default memo(function ListItem({
   data,
-  editTask,
-  deleteTask,
-  completeTask,
+  setTask,
 }: {
   data: ItemData;
-  editTask: (id: string, newTask: string) => void;
-  deleteTask: (id: string) => void;
-  completeTask: (id: string) => void;
+  setTask: React.Dispatch<React.SetStateAction<ItemData[]>>;
 }) {
-  const [count, setCount] = useState(0);
   const inputTask = useRef<HTMLInputElement>(null);
+
+  const editTask = () => {
+    setTask((prev) =>
+      prev.map((item) =>
+        item.id === data.id
+          ? { ...item, task: inputTask.current ? inputTask.current.value : "" }
+          : item
+      )
+    );
+  };
+
+  const completeTask = () => {
+    setTask((prev) =>
+      prev.map((item) =>
+        item.id === data.id ? { ...item, completed: !item.completed } : item
+      )
+    );
+  };
+
+  const deleteTask = () => {
+    setTask((prev) => prev.filter((item) => item.id !== data.id));
+  };
 
   const changeFocus = () => {
     if (inputTask.current) {
@@ -30,9 +47,17 @@ export default memo(function ListItem({
 
   const leaveFocus = () => {
     if (inputTask.current) {
-      editTask(data.id, inputTask.current.value);
+      editTask();
       inputTask.current.readOnly = true;
     }
+  };
+
+  const handleOnClick = () => {
+    setTask((prev) =>
+      prev.map((item) =>
+        item.id === data.id ? { ...item, count: item.count + 1 } : item
+      )
+    );
   };
 
   return (
@@ -42,7 +67,7 @@ export default memo(function ListItem({
         className={``}
         name=""
         id=""
-        onChange={() => completeTask(data.id)}
+        onChange={completeTask}
         defaultChecked={data.completed}
       />
       <input
@@ -52,14 +77,12 @@ export default memo(function ListItem({
           data.completed ? "line-through" : ""
         }`}
         defaultValue={data.task}
-        onClick={() => {
-          setCount(count + 1);
-        }}
+        onClick={handleOnClick}
         // onBlur={leaveFocus}
-        onKeyDown={(e) => handleKeyDown(e)}
+        onKeyDown={handleKeyDown}
         readOnly
       />
-      <p className={`${count === 0 ? "invisible" : ""}`}>{count}</p>
+      <p className={`${data.count === 0 ? "invisible" : ""}`}>{data.count}</p>
       <div
         className="flex justify-center items-center p-1 hover:bg-orange-400 rounded-sm transition-all"
         onClick={changeFocus}
@@ -68,7 +91,7 @@ export default memo(function ListItem({
       </div>
       <div
         className="flex justify-center items-center p-1 hover:bg-red-500 rounded-sm transition-all"
-        onClick={() => deleteTask(data.id)}
+        onClick={deleteTask}
       >
         <img src="/deleteIcon.png" alt="" className="w-5 h-5" />
       </div>
