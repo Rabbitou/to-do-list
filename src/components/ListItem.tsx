@@ -14,7 +14,6 @@ export default memo(function ListItem({
 }) {
   const [count, setCount] = useState(0);
   const inputTask = useRef<HTMLInputElement>(null);
-  console.log(data.id);
 
   const changeFocus = () => {
     if (inputTask.current) {
@@ -37,13 +36,14 @@ export default memo(function ListItem({
   };
 
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2 h-8">
       <input
         type="checkbox"
         className={``}
         name=""
         id=""
         onChange={() => completeTask(data.id)}
+        defaultChecked={data.completed}
       />
       <input
         ref={inputTask}

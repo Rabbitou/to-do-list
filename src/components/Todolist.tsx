@@ -2,18 +2,28 @@ import React, { useRef, useState } from "react";
 import { ItemData } from "../../types/ListItem";
 import ListItem from "./ListItem";
 import { useInterSectionObserver } from "../../hehe";
+import VirtualizedList from "./Virtualized/VirtualizedList";
 
 export default function Todolist() {
+  const itemHeight = 40;
+  const numVisibleItems = 10;
+  const TOTAL_ITEMS = 10000;
   const inputTask = useRef<HTMLInputElement>(null);
   const [task, setTask] = useState<ItemData[]>([]);
-  const refLast = useRef<HTMLSpanElement | null>(null);
+  // const refLast = useRef<HTMLSpanElement | null>(null);
 
-  useInterSectionObserver({
-    target: refLast,
-    onIntersect: () => console.log("nextPage"),
-    threshold: 1,
-    enabled: true,
-  });
+  const data = [...Array(TOTAL_ITEMS)].map((_, index) => ({
+    id: crypto.randomUUID(),
+    task: `Task ${index}`,
+    completed: false,
+  }));
+
+  // useInterSectionObserver({
+  //   target: refLast,
+  //   onIntersect: () => console.log("nextPage"),
+  //   threshold: 1,
+  //   enabled: true,
+  // });
 
   const addNewTask = () => {
     if (inputTask.current && inputTask.current.value) {
@@ -50,8 +60,20 @@ export default function Todolist() {
     addNewTask();
   };
 
+  const renderItem = (item: ItemData) => {
+    return (
+      <ListItem
+        key={item.id}
+        data={item}
+        editTask={editTask}
+        deleteTask={deleteTask}
+        completeTask={completeTask}
+      />
+    );
+  };
+
   return (
-    <div className="flex flex-col gap-4 bg-white/5 rounded-md p-5 mt-5">
+    <div className="flex flex-col gap-4 bg-white/5 rounded-md min-w-[360px] p-5 mt-5">
       <form onSubmit={handleOnSubmit} className="flex">
         <input
           ref={inputTask}
@@ -66,18 +88,12 @@ export default function Todolist() {
           Add Task
         </button>
       </form>
-      <div className="flex flex-col gap-2 max-h-[300px] overflow-auto">
-        {task.map((data) => (
-          <ListItem
-            data={data}
-            editTask={editTask}
-            deleteTask={deleteTask}
-            completeTask={completeTask}
-            key={data.id}
-          />
-        ))}
-        <span ref={refLast} className={``}></span>
-      </div>
+      <VirtualizedList
+        numVisibleItems={numVisibleItems}
+        itemHeight={itemHeight}
+        listData={task}
+        renderItem={renderItem}
+      />
     </div>
   );
 }
