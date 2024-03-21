@@ -22,7 +22,7 @@ export default function Todolist() {
 
   const handleOnSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    addNewTask();
+    if (inputValue) addNewTask();
   };
 
   const renderItem = (item: ItemData) => {
